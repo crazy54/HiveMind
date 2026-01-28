@@ -1,0 +1,32 @@
+# Strands AI Agent Framework
+strands-agents>=1.0.0
+strands-agents-tools>=0.2.0
+
+# AWS SDK
+boto3
+botocore
+
+# Git operations
+gitpython
+
+# SSH and remote execution
+paramiko
+cryptography
+
+# HTTP requests
+requests
+
+# Schema validation
+pydantic
+pydantic-settings
+
+# Utilities
+python-dotenv
+pyyaml
+
+# Testing
+pytest
+pytest-asyncio
+pytest-mock
+hypothesis
+moto[all]

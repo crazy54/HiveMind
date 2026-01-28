@@ -1,0 +1,205 @@
+.TH HIVEMIND 1 "January 2026" "HiveMind 1.0" "User Commands"
+.SH NAME
+hivemind, hm \- Intelligent multi-agent deployment system
+.SH SYNOPSIS
+.B hivemind
+[\fIOPTIONS\fR] \fICOMMAND\fR [\fIARGS\fR]
+.br
+.B hm
+[\fIOPTIONS\fR] \fICOMMAND\fR [\fIARGS\fR]
+.SH DESCRIPTION
+HiveMind AutoDeploy is a multi-agent AI system that automatically deploys applications from source code repositories to AWS infrastructure.
+.PP
+The system uses 6 specialized agents:
+.IP \(bu 2
+HiveMind SA (Solutions Architect) - Analyzes documentation
+.IP \(bu 2
+HiveMind DevOps - Builds applications
+.IP \(bu 2
+HiveMind SysEng - Provisions AWS infrastructure
+.IP \(bu 2
+HiveMind Release-Engineer - Deploys applications
+.IP \(bu 2
+HiveMind SecOps - Hardens security
+.IP \(bu 2
+HiveMind Control Plane - Orchestrates all agents
+.SH COMMANDS
+.TP
+.B deploy \fIREPO_URL\fR \fIDESCRIPTION\fR
+Deploy an application from a repository
+.RS
+.TP
+.B \-\-what-if
+Simulate deployment without making changes (shows costs and resources)
+.TP
+.B \-\-verbose, -v
+Show detailed output with all agent interactions
+.RE
+.TP
+.B analyze \fIREPO_URL\fR
+Analyze repository documentation without deploying (SA agent only)
+.RS
+.TP
+.B \-\-output \fIFILE\fR
+Save analysis to JSON file
+.RE
+.TP
+.B status \fIDEPLOYMENT_ID\fR
+Check deployment status and view logs
+.RS
+.TP
+.B \-\-show-plan
+Show deployment plan (for what-if deployments)
+.TP
+.B \-\-verbose, -v
+Show detailed logs from all agents
+.RE
+.TP
+.B plan \fIDEPLOYMENT_ID\fR
+Show deployment plan created by SA agent
+.TP
+.B list
+List all deployments
+.RS
+.TP
+.B \-\-status \fISTATUS\fR
+Filter by status (completed, failed, pending, etc.)
+.TP
+.B \-\-limit \fIN\fR
+Limit number of results
+.TP
+.B \-\-verbose, -v
+Show deployment statistics
+.RE
+.TP
+.B retry \fIDEPLOYMENT_ID\fR
+Retry a failed deployment from the last successful stage
+.TP
+.B rollback \fIDEPLOYMENT_ID\fR
+Rollback deployment and delete all AWS resources
+.RS
+.TP
+.B \-\-yes, -y
+Skip confirmation prompt
+.TP
+.B \-\-verbose, -v
+Show detailed rollback progress
+.RE
+.TP
+.B destroy \fIDEPLOYMENT_ID\fR
+Destroy deployment resources (alias for rollback)
+.RS
+.TP
+.B \-\-force, -f
+Skip confirmation prompt
+.TP
+.B \-\-skip-snapshot
+Skip RDS final snapshot (faster but no backup)
+.TP
+.B \-\-verbose, -v
+Show detailed destruction progress
+.RE
+.TP
+.B reconcile \fIDEPLOYMENT_ID\fR
+Reconcile deployment state with actual AWS resources
+.RS
+.TP
+.B \-\-verbose, -v
+Show detailed reconciliation results
+.RE
+.TP
+.B find-orphans
+Find orphaned HiveMind resources in AWS (resources without valid deployment)
+.RS
+.TP
+.B \-\-verbose, -v
+Show detailed resource information
+.RE
+.TP
+.B cleanup
+Clean up temporary and working files
+.RS
+.TP
+.B \-\-backup
+Create zip backup archive before cleaning
+.TP
+.B \-\-yes, -y
+Skip confirmation prompt
+.RE
+.SH OPTIONS
+.TP
+.B \-\-state-dir \fIDIR\fR
+Directory for deployment state files (default: ./HiveMind-Work/deployments)
+.TP
+.B \-\-region \fIREGION\fR
+AWS region for infrastructure (default: us-east-1)
+.SH EXAMPLES
+.TP
+Simulate deployment (safe, no AWS charges):
+.B hivemind deploy https://github.com/user/app "Test" --what-if
+.TP
+Real deployment:
+.B hivemind deploy https://github.com/user/app "Production v1.0"
+.TP
+Check status with detailed logs:
+.B hivemind status abc123def --verbose
+.TP
+Rollback deployment:
+.B hivemind rollback abc123def
+.TP
+Clean up working files with backup:
+.B hivemind cleanup --backup
+.TP
+List all completed deployments:
+.B hivemind list --status completed
+.TP
+Find orphaned AWS resources:
+.B hivemind find-orphans
+.TP
+Use short alias:
+.B hm deploy https://github.com/user/app "Test" --what-if
+.SH FILES
+.TP
+.I ~/.hivemind/
+Working files directory (deployments, analyzed repos, temp files)
+.TP
+.I ~/.hivemind/deployments/
+Deployment state files (JSON)
+.TP
+.I ~/.hivemind/analyzed_repos/
+Cloned repositories for analysis
+.SH ENVIRONMENT
+.TP
+.B AWS_ACCESS_KEY_ID
+AWS access key for authentication
+.TP
+.B AWS_SECRET_ACCESS_KEY
+AWS secret key for authentication
+.TP
+.B AWS_REGION
+Default AWS region (overridden by --region)
+.SH EXIT STATUS
+.TP
+.B 0
+Success
+.TP
+.B 1
+Failure (deployment failed, invalid arguments, etc.)
+.SH NOTES
+.PP
+HiveMind requires AWS credentials to deploy applications. Configure with:
+.PP
+.B aws configure
+.PP
+or set environment variables AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.
+.PP
+What-if mode (--what-if) is safe and does not create any AWS resources or incur charges.
+.SH SEE ALSO
+.BR aws (1),
+.BR git (1)
+.PP
+Full documentation: README.md in installation directory
+.SH BUGS
+Report bugs at: https://github.com/yourusername/hivemind-autodeploy/issues
+.SH AUTHOR
+HiveMind AutoDeploy Team

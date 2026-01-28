@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# HiveMind CLI wrapper - allows 'hivemind' command from anywhere
+
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+HIVEMIND_DIR="$( cd "$SCRIPT_DIR/.." && pwd )"
+
+# Activate virtual environment if it exists
+if [ -f "$HIVEMIND_DIR/.venv/bin/activate" ]; then
+    source "$HIVEMIND_DIR/.venv/bin/activate"
+fi
+
+# Run the CLI
+cd "$HIVEMIND_DIR"
+python3 -m src.cli "$@"
+
