@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Daily End-of-Day Review & Planning",
+  "description": "Daily hook that triggers at 4PM CST to review spec documents (tasks, design, requirements), generate a task list for the next day with unit tests, scan for misplaced files to move to cleanup folder, and update design/requirements documents with any new ideas from the day",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "It's 4PM CST - time for the daily end-of-day review! Please complete the following tasks:\n\n1. **Review Specification Documents**: \n   - Review ORDERED_TASK_LIST.md for current tasks\n   - Review any design documents in the project\n   - Review requirements documents\n\n2. **Generate Tomorrow's Task List**:\n   - Based on the spec review, create a prioritized task list for tomorrow\n   - Include only work that can realistically be completed in one day\n   - For each task, specify unit tests that should be written to ensure functionality\n   - Consider dependencies and logical ordering\n\n3. **File Organization Scan**:\n   - Scan all files and directories in the project\n   - Identify any one-off files that don't belong in their current location\n   - Move misplaced files to the TRASH_BIN folder (our project cleanup and testing folder)\n   - Document what was moved and why\n\n4. **Capture Daily Ideas**:\n   - Review any design or requirements documents\n   - Add any new ideas, improvements, or changes that came up during the day\n   - Update design and requirements documents so nothing is forgotten\n   - Ensure Jeremy's awesome ideas are documented for tomorrow\n\nPlease provide a comprehensive summary of:\n- Tasks identified for tomorrow with associated unit tests\n- Files that were reorganized and why\n- Design/requirement updates that were captured\n- Any blockers or dependencies to be aware of\n\nThis should be completed and ready for human review by 4PM CST (completion by 5PM is acceptable)."
+  }
+}

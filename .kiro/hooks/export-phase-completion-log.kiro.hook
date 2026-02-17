@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "name": "Export Phase Completion Log",
+  "description": "When a phase of tasks is completed (e.g., Phase 5 with tasks 5.1-5.32), automatically export the chat conversation log to .kiro/Completed_Phase_Logs for documentation and review then start a new tab for the next phase.",
+  "version": "1",
+  "when": {
+    "type": "agentStop"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Check if I just completed all tasks in a phase (e.g., Phase 1, Phase 2, etc.) from the current project. \nIf the answer is no, keep on doing your existing task(s) and don't worry about me.\n\nIf yes:\n\n1. Create the directory .kiro/Completed_Phase_Logs if it doesn't exist\n2. Determine which phase was just completed (e.g., \"Phase_1\", \"Phase_5\")\n3. Export this entire chat conversation to a markdown file named: .kiro/Completed_Phase_Logs/Phase_X_Completion_Log_YYYY-MM-DD.md\n4. Include in the file:\n   - Phase number and name\n   - Date and time of completion\n   - List of all tasks completed in that phase\n   - Full conversation log\n   - Summary of what was accomplished\n\nIf no phase has just completed, do nothing and go back to work. "
+  },
+  "workspaceFolderName": "HiveMind",
+  "shortName": "export-phase-completion-log"
+}

@@ -1,0 +1,253 @@
+# Implementation Plan: Infrastructure Studio React
+
+## Overview
+
+This plan implements the Infrastructure Studio as a new React page at `/studio` using Ant Design with a command-center cockpit layout. Tasks are ordered so each builds on the previous, with utility functions first (testable independently), then components, then wiring and integration. Ant Design (`antd`) and `yaml` must be installed as new dependencies.
+
+## Tasks
+
+- [x] 1. Install dependencies and set up project scaffolding
+  - [x] 1.1 Install antd and yaml packages
+    - Run `npm install antd @ant-design/icons yaml` in `hivemind_web/web/`
+    - _Requirements: 1.4, 10.1_
+  - [x] 1.2 Create directory structure and type definitions
+    - Create `src/components/studio/` directory
+    - Create `src/utils/studio/` directory
+    - Create `src/utils/studio/studioTypes.ts` with all TypeScript interfaces: `InfrastructureConfig`, `ApiSettings`, `SessionConfig`, `ChatMessage`, `DeploymentEvent`, `CostBreakdownItem`, `StudioState`, `StudioAction`, `InstanceType`, `DbEngine`, `DeploymentStage`, `ThemeMode`, `LlmProvider`, `ActiveView`
+    - Include the `AWS_REGIONS` constant array (27 regions) and `DEPLOYMENT_EVENTS` constant array
+    - _Requirements: 2.4, 9.2, 11.1_
+
+- [x] 2. Implement core utility functions
+  - [x] 2.1 Implement deploymentIdGenerator
+    - Create `src/utils/studio/deploymentIdGenerator.ts`
+    - Implement `generateDeploymentId()` that returns `deploy-{8 random lowercase alphanumeric chars}`
+    - _Requirements: 15.1, 15.2, 15.3_
+  - [x] 2.2 Write property test for deploymentIdGenerator
+    - Create `src/utils/studio/deploymentIdGenerator.property.test.ts`
+    - **Property 10: Deployment ID matches format regex**
+    - **Validates: Requirements 15.1, 15.2, 15.3**
+  - [x] 2.3 Implement costCalculator
+    - Create `src/utils/studio/costCalculator.ts`
+    - Implement `calculateTotalCost(config)` using the rate table: VPC=$0, EC2 t3.micro=$7.59/t3.small=$15.18/t3.medium=$30.37/t3.large=$60.74, RDS=$12.41+$2.30, ALB=$16.20+$5.84
+    - Implement `getCostBreakdown(config)` returning `CostBreakdownItem[]`
+    - _Requirements: 6.3, 6.4, 14.1, 14.2, 14.3, 14.4_
+  - [x] 2.4 Write property tests for costCalculator
+    - Create `src/utils/studio/costCalculator.property.test.ts`
+    - **Property 8: Cost total equals sum of breakdown**
+    - **Validates: Requirements 6.4, 14.2**
+    - **Property 9: Cost matches rate table and is non-negative**
+    - **Validates: Requirements 6.3, 14.3**
+  - [x] 2.5 Implement templateGenerator
+    - Create `src/utils/studio/templateGenerator.ts`
+    - Implement `generateTemplate(config)` that returns a CloudFormation YAML string with AWSTemplateFormatVersion, Description, Parameters (InstanceType with AllowedValues and Default from config), Resources (VPC, PublicSubnet1, ApplicationInstance), and Outputs (VpcId)
+    - _Requirements: 5.2, 13.1, 13.2_
+  - [x] 2.6 Write property tests for templateGenerator
+    - Create `src/utils/studio/templateGenerator.property.test.ts`
+    - **Property 6: Template contains required YAML sections with correct instance type**
+    - **Validates: Requirements 5.2, 13.2**
+    - **Property 7: Template YAML round-trip preserves InstanceType**
+    - **Validates: Requirements 13.3**
+  - [x] 2.7 Implement chatEngine
+    - Create `src/utils/studio/chatEngine.ts`
+    - Implement `generateAgentResponse(userInput, infrastructure, previousMessages)` with keyword matching: "web"/"api" → set vpc/ec2/alb; "yes" + previous "database" → set rds; "t3.*" → set instance_type; "no" + previous "database" → confirm without RDS; fallback → help
+    - Return `{ response: string; infrastructureUpdates: Partial<InfrastructureConfig> | null }`
+    - _Requirements: 3.5, 3.6, 3.7, 3.8, 3.9_
+  - [x] 2.8 Write property tests for chatEngine
+    - Create `src/utils/studio/chatEngine.property.test.ts`
+    - **Property 2: Message submission grows history by exactly two**
+    - **Validates: Requirements 3.4**
+    - **Property 3: Web/API keywords enable infrastructure flags**
+    - **Validates: Requirements 3.5**
+    - **Property 4: Instance type keyword updates config**
+    - **Validates: Requirements 3.7**
+    - **Property 5: Non-matching input returns help response**
+    - **Validates: Requirements 3.9**
+
+- [x] 3. Implement studioReducer and state management
+  - [x] 3.1 Implement studioReducer
+    - Create `src/utils/studio/studioReducer.ts`
+    - Implement `studioReducer(state, action)` handling all `StudioAction` types: UPDATE_INFRASTRUCTURE, ADD_MESSAGE, SET_DEPLOYMENT_STAGE, UPDATE_SESSION_CONFIG, SET_THEME, SET_LOADING, SET_TEMPLATE_GENERATED, SET_ACTIVE_VIEW, TOGGLE_CHAT, RESET_SESSION
+    - Export `INITIAL_STATE` with all defaults (infrastructure defaults, empty messages with initial greeting, planning stage, dark theme, architecture view, chat closed)
+    - RESET_SESSION must regenerate deployment ID and restore all defaults
+    - _Requirements: 2.8, 11.1, 11.2, 11.5_
+  - [x] 3.2 Write property test for studioReducer
+    - Create `src/utils/studio/studioReducer.property.test.ts`
+    - **Property 1: Reset produces default state**
+    - **Validates: Requirements 2.8, 11.5**
+  - [x] 3.3 Write unit tests for studioReducer
+    - Create `src/utils/studio/studioReducer.test.ts`
+    - Test each action type individually
+    - Test edge cases: reset from various states, update with partial infrastructure
+    - _Requirements: 11.1, 11.2, 11.3, 11.5_
+
+- [x] 4. Checkpoint - Ensure all utility tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 5. Implement top-level layout components
+  - [x] 5.1 Implement TopBar component
+    - Create `src/components/studio/TopBar.tsx`
+    - Render HiveMind logo (small), "Infrastructure Studio" title, deployment ID badge, and ThemeToggle
+    - _Requirements: 12.1, 12.2_
+  - [x] 5.2 Implement ThemeToggle component
+    - Create `src/components/studio/ThemeToggle.tsx`
+    - Render 🌙/☀️ icon button that calls `onToggleTheme`
+    - _Requirements: 10.2, 10.3_
+  - [x] 5.3 Implement LoadingOverlay component
+    - Create `src/components/studio/LoadingOverlay.tsx`
+    - Render full-page overlay with spinning animation and "Updating..." text when `visible` is true
+    - Block all pointer events and keyboard input via CSS
+    - _Requirements: 8.1, 8.2, 8.3, 8.4_
+  - [x] 5.4 Write unit tests for TopBar, ThemeToggle, and LoadingOverlay
+    - Create test files for each component
+    - Test rendering, click handlers, visibility toggling
+    - _Requirements: 10.2, 10.3, 8.3_
+
+- [x] 6. Implement left icon rail and flyout panels
+  - [x] 6.1 Implement LeftIconRail component
+    - Create `src/components/studio/LeftIconRail.tsx`
+    - Render narrow vertical rail with icons: ⚙️ (Settings), 🎯 (Priorities), 🔌 (API), 🔄 (Reset)
+    - Each icon triggers its corresponding flyout or action
+    - _Requirements: 2.1, 2.5, 2.6, 2.7_
+  - [x] 6.2 Implement ConfigFlyout component
+    - Create `src/components/studio/ConfigFlyout.tsx`
+    - Render popover with: Repository URL input (placeholder `https://github.com/user/repo`), Deployment ID input with 🎲 randomize button, AWS Region dropdown (27 regions)
+    - _Requirements: 2.1, 2.2, 2.3, 2.4_
+  - [x] 6.3 Implement PrioritiesFlyout component
+    - Create `src/components/studio/PrioritiesFlyout.tsx`
+    - Render popover with four sliders: Security (0-10, default 8), Cost Optimization (0-10, default 5), Performance (0-10, default 7), High Availability (0-10, default 6)
+    - _Requirements: 2.5_
+  - [x] 6.4 Implement ApiFlyout component
+    - Create `src/components/studio/ApiFlyout.tsx`
+    - Render popover with: Bedrock endpoint URL, Bedrock model ID, Claude API key (password field), ChatGPT API key (password field), Active provider dropdown
+    - _Requirements: 2.6_
+  - [x] 6.5 Write unit tests for LeftIconRail and flyout components
+    - Test icon rail renders all icons
+    - Test ConfigFlyout renders all inputs, randomize button works
+    - Test PrioritiesFlyout renders sliders with correct defaults
+    - Test ApiFlyout renders all API fields
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
+
+- [x] 7. Implement center stage views
+  - [x] 7.1 Implement ViewToggle component
+    - Create `src/components/studio/ViewToggle.tsx`
+    - Render antd Segmented control with options: Architecture, Template, Cost
+    - _Requirements: 4.1, 5.1, 6.1_
+  - [x] 7.2 Implement ArchitectureDiagram component
+    - Create `src/components/studio/ArchitectureDiagram.tsx`
+    - Render SVG/CSS visual of VPC container with EC2, RDS, ALB nodes and connection lines
+    - Show/hide nodes based on InfrastructureConfig boolean flags
+    - Display instance type and DB engine labels on nodes
+    - Animate nodes with subtle pulse/glow effects
+    - _Requirements: 4.1, 4.3_
+  - [x] 7.3 Implement ArchitectureView component
+    - Create `src/components/studio/ArchitectureView.tsx`
+    - Compose ArchitectureDiagram + resource checklist + live cost summary
+    - Show informational message when no resources are enabled
+    - Show action status indicator during deployment/validation
+    - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6_
+  - [x] 7.4 Implement TemplateView component
+    - Create `src/components/studio/TemplateView.tsx`
+    - Render YAML code block using `<pre>` with monospace font and syntax-like styling
+    - Include "Validate Template" button (shows simulated success message via antd `message`)
+    - Include "Download Template" button (triggers browser download of YAML file)
+    - Regenerate template when infrastructure changes
+    - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
+  - [x] 7.5 Implement CostView component
+    - Create `src/components/studio/CostView.tsx`
+    - Display total monthly cost as large metric
+    - Display breakdown table with resource names and costs
+    - Display us-east-1 pricing caption
+    - Animate cost changes with number transition effect
+    - _Requirements: 6.1, 6.2, 6.5, 6.6_
+  - [x] 7.6 Write unit tests for center stage components
+    - Test ViewToggle renders segments and fires onChange
+    - Test ArchitectureView renders diagram and resource list for various configs
+    - Test ArchitectureView shows empty message when all resources disabled
+    - Test TemplateView renders YAML and buttons
+    - Test CostView renders total and breakdown
+    - _Requirements: 4.1, 4.2, 4.4, 5.1, 6.1, 6.2_
+
+- [x] 8. Implement chat drawer
+  - [x] 8.1 Implement ChatMessage component
+    - Create `src/components/studio/ChatMessage.tsx`
+    - Render message bubble with role-based styling (user vs assistant)
+    - Display HiveMind logo icon as avatar for assistant messages
+    - Apply glass-morphism-compatible dark gradient backgrounds
+    - _Requirements: 3.1, 3.3_
+  - [x] 8.2 Implement ChatDrawer component
+    - Create `src/components/studio/ChatDrawer.tsx`
+    - Use antd Drawer component sliding from right with glass-morphism styling
+    - Render scrollable message list using ChatMessage components
+    - Render chat input at bottom
+    - Display initial greeting when no messages exist
+    - Ignore empty/whitespace-only submissions
+    - _Requirements: 3.1, 3.2, 3.4_
+  - [x] 8.3 Write unit tests for ChatDrawer and ChatMessage
+    - Test ChatMessage renders user and assistant variants
+    - Test ChatDrawer renders messages and input
+    - Test ChatDrawer ignores empty submissions
+    - Test initial greeting appears on first render
+    - _Requirements: 3.1, 3.2, 3.3, 3.4_
+
+- [x] 9. Implement bottom dock and deployment overlay
+  - [x] 9.1 Implement BottomDock component
+    - Create `src/components/studio/BottomDock.tsx`
+    - Render four action buttons: Generate Template (🎨), Validate (🔍), Deploy to AWS (🚀 primary), View Deployments (📊)
+    - Render live cost ticker on the right side showing current total cost with gold styling
+    - Apply dock styling with blur backdrop and border
+    - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
+  - [x] 9.2 Implement DeploymentOverlay component
+    - Create `src/components/studio/DeploymentOverlay.tsx`
+    - Render full-screen dark overlay when deployment stage is "deploying"
+    - Animate through DEPLOYMENT_EVENTS sequence with progress bar and status text
+    - Glow resource nodes as they transition (amber pulse → green solid)
+    - Show mock stack outputs on completion
+    - Trigger confetti animation on completion (use CSS keyframe particles)
+    - Call `onComplete` when animation finishes
+    - Hide when deployment stage is not "deploying"
+    - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5_
+  - [x] 9.3 Write unit tests for BottomDock and DeploymentOverlay
+    - Test BottomDock renders all buttons and cost ticker
+    - Test DeploymentOverlay visibility based on stage
+    - Test DeploymentOverlay shows outputs on completion
+    - _Requirements: 7.1, 9.1, 9.3, 9.5_
+
+- [x] 10. Checkpoint - Ensure all component tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 11. Wire everything together in InfrastructureStudioPage
+  - [x] 11.1 Implement InfrastructureStudioPage
+    - Create `src/pages/InfrastructureStudioPage.tsx`
+    - Initialize `useReducer` with `studioReducer` and `INITIAL_STATE`
+    - Wrap entire page in antd `ConfigProvider` with `theme.darkAlgorithm` (or `defaultAlgorithm` based on `themeMode`) and primary color #D4AF37
+    - Compose layout: TopBar, LeftIconRail with flyout state management, center stage with ViewToggle + conditional ArchitectureView/TemplateView/CostView, floating chat FAB button (💬), ChatDrawer, BottomDock, DeploymentOverlay, LoadingOverlay
+    - Wire all dispatch actions: chat sends message → chatEngine → dispatch UPDATE_INFRASTRUCTURE + ADD_MESSAGE; action bar buttons → dispatch appropriate actions; reset → dispatch RESET_SESSION; theme toggle → dispatch SET_THEME
+    - Apply page-level CSS: background gradient, 4px top accent bar, dark scrollbar, gold accent styling
+    - _Requirements: 1.1, 1.4, 2.8, 3.4, 3.5, 4.3, 5.5, 6.5, 7.2, 7.3, 7.4, 7.5, 8.1, 10.1, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8, 10.9, 10.10, 10.11, 11.1, 11.2, 11.3, 11.4, 11.5_
+  - [x] 11.2 Add Studio route to App.tsx and NavigationBar
+    - Add `import { InfrastructureStudioPage } from './pages/InfrastructureStudioPage'` to App.tsx
+    - Add `<Route path="/studio" element={<InfrastructureStudioPage />} />` before the catch-all route
+    - Add `{ label: 'Studio', path: '/studio' }` to `NAV_LINKS` in NavigationBar.tsx
+    - _Requirements: 1.1, 1.2, 1.3_
+  - [x] 11.3 Write integration tests for InfrastructureStudioPage
+    - Create `src/pages/InfrastructureStudioPage.test.tsx`
+    - Test page renders with all major sections visible
+    - Test chat flow: send "web app" → verify infrastructure updates → verify architecture view updates
+    - Test view toggle switches between Architecture/Template/Cost
+    - Test reset clears state
+    - Test theme toggle switches theme
+    - _Requirements: 1.1, 3.4, 3.5, 10.3, 11.3, 11.5_
+
+- [x] 12. Final checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+## Notes
+
+- Tasks marked with `*` are optional and can be skipped for faster MVP
+- Each task references specific requirements for traceability
+- Checkpoints ensure incremental validation
+- Property tests validate universal correctness properties from the design document
+- Unit tests validate specific examples and edge cases
+- The `yaml` npm package is needed for the template round-trip property test (Property 7)
+- Ant Design's `ConfigProvider` wraps only the Studio page — no changes to MUI theming elsewhere
+- All new files go under `src/components/studio/` and `src/utils/studio/` to keep the Studio isolated

@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Workspace Exit Handler",
+  "description": "When exiting or closing the workspace, this hook creates a status file documenting where work left off, backs up chat history to the .kiro folder, scans code for simple fixes, and prepares the workspace for next session",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "The workspace is closing. Please perform the following tasks:\n\n1. Create a file at `.kiro/SESSION_STATE.md` that documents:\n   - What work was being done (tasks A/B/C)\n   - What needs to be done next (tasks D/E/F)\n   - Any important context or decisions made\n   - Current state of the codebase\n\n2. Backup the current chat history to `.kiro/chat_history_backup_[timestamp].json` to preserve all conversation context\n\n3. Scan the codebase for low-hanging fruit issues that are simple to fix:\n   - Unused imports\n   - Simple linting issues\n   - Obvious typos in comments\n   - Missing docstrings on public functions\n   - Fix any issues found\n\n4. Create a summary of any fixes made in `.kiro/EXIT_CLEANUP.md`\n\nBe thorough but efficient. Focus on preserving context for the next session."
+  }
+}

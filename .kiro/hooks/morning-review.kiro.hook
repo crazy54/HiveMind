@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Morning Review & Context Restoration",
+  "description": "Reviews yesterday's work, reads EOD summaries, and helps you pick up where you left off",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Good morning! Let's review yesterday's work and get you back into context.\n\n**Your Tasks:**\n\n1. **Read Yesterday's EOD Summary**\n   - Look for the most recent daily summary file (check for files with today's or yesterday's date)\n   - Read the task list that was created for today\n   - Review what was accomplished yesterday\n   - Check what ideas were captured\n\n2. **Review Cleanup Actions**\n   - Check TRASH_BIN/ for any files moved yesterday\n   - Read any cleanup manifests or summaries\n   - Understand why files were moved\n\n3. **Check Active Specs**\n   - Review .kiro/specs/ for any active work\n   - Check tasks.md files for incomplete tasks\n   - Look at design.md and requirements.md for context\n\n4. **Present Morning Briefing**\n   Create a concise morning briefing that includes:\n   - **Yesterday's Accomplishments**: What was completed\n   - **Today's Priorities**: Tasks planned for today (from EOD summary)\n   - **Files Moved**: What was cleaned up and why\n   - **Active Work**: Current specs and their status\n   - **Quick Context**: Key information to remember\n   - **Suggested Next Steps**: What to work on first\n\n5. **Format the Briefing**\n   Use clear sections with emojis:\n   - 📅 Yesterday's Summary\n   - ✅ Completed Work\n   - 🎯 Today's Priorities\n   - 📁 Files Moved/Cleaned\n   - 🚀 Active Projects\n   - 💡 Ideas Captured\n   - 🔄 Suggested Next Action\n\n**Important:**\n- Be concise but comprehensive\n- Focus on actionable information\n- Highlight any blockers or issues\n- Make it easy to jump right back into work\n- If no EOD summary exists, review the most recent work based on file timestamps\n\nProvide the morning briefing now."
+  }
+}
