@@ -17,6 +17,8 @@
 
 HiveMind is a production-ready multi-agent AI system built with the **Strands SDK** and **Amazon Bedrock**. It ships with a full-featured **React web studio** for real-time agent chat, infrastructure deployment, CloudWatch log browsing, and deployment tracking — all in one place.
 
+Note: I am actively performing updates to the project - wait for a release on the repo before testing. Thank You!
+
 ## Screenshots
 
 <div align="center">
@@ -248,3 +250,4 @@ The frontend test suite covers unit tests and property-based tests (fast-check) 
 ## License
 
 Educational / personal use. See `LICENSE`.
+
