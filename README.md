@@ -17,8 +17,6 @@
 
 HiveMind is a production-ready multi-agent AI system built with the **Strands SDK** and **Amazon Bedrock**. It ships with a full-featured **React web studio** for real-time agent chat, infrastructure deployment, CloudWatch log browsing, and deployment tracking — all in one place.
 
-**Note: I am actively performing updates to the project - wait for a release on the repo before testing. Thank You!**
-
 ## Screenshots
 
 <div align="center">
@@ -37,7 +35,7 @@ HiveMind is a production-ready multi-agent AI system built with the **Strands SD
 
 **Multi-Agent Backend**
 
-- 3 specialized Strands agents: Recon, Conductor, Janitor
+- 10 specialized Strands agents: Recon, Conductor, Provisioner, Deployer, Sheriff, QA, Ops, Medic, Janitor, Compiler
 - Real-time streaming chat via WebSocket (`stream_async`)
 - Amazon Bedrock integration with Claude Sonnet 4 (default)
 - Multiple auth modes: env vars, AWS profile, or explicit keys
@@ -85,9 +83,16 @@ HiveMind/
 
 | Agent | Role | Capabilities |
 |-------|------|-------------|
-| 🔍 Recon | Repository Scout | Repo analysis, tech detection, dependency scan, security audit |
-| 🎼 Conductor | Infrastructure Orchestrator | Infra design, CloudFormation, cost estimation, architecture |
+| 🔍 Recon | Repository Scout | Repo analysis, tech stack detection, dependency scanning, security audit |
+| 🎼 Conductor | Infrastructure Orchestrator | Infra design, CloudFormation generation, cost estimation, deployment workflow |
+| 🏗️ Provisioner (Server Monkey) | Infrastructure Provisioner | CloudFormation template generation, EC2/RDS/ALB resource provisioning |
+| 🚀 Deployer | Application Deployer | App deployment, ALB target group registration, health checks |
+| 🔒 Sheriff | Security Agent | Security group management, IAM policies, compliance enforcement |
+| 🧪 QA | Quality Assurance | Post-deployment verification, health checks, endpoint testing |
+| 📊 Ops | Observability | CloudWatch dashboards, X-Ray tracing, metrics and alerting setup |
+| 🩺 Medic | Error Recovery | Failure analysis, automated fix suggestions, retry orchestration |
 | 🧹 Janitor | Cleanup & Maintenance | Resource cleanup, cost optimization, drift detection, compliance |
+| ⚙️ Compiler | Build Agent | Application build, dependency resolution, artifact preparation |
 
 ---
 
@@ -250,5 +255,3 @@ The frontend test suite covers unit tests and property-based tests (fast-check) 
 ## License
 
 Educational / personal use. See `LICENSE`.
-
-
