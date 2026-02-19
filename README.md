@@ -1,433 +1,250 @@
-# HiveMind AutoDeploy
+<div align="center">
+  <img src="assets/Hivemind-Logo-TRANS.png" alt="HiveMind Logo" width="420" />
 
-A production-ready multi-agent AI system built with **Strands SDK** that automatically deploys applications from source code repositories to AWS infrastructure with comprehensive testing and rollback capabilities.
+  <h1>HiveMind Studio</h1>
+  <p><strong>Multi-agent AI platform for automated AWS infrastructure deployment</strong></p>
 
-## 🎯 Features
+  <p>
+    <img src="https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white" alt="Python" />
+    <img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white" alt="React" />
+    <img src="https://img.shields.io/badge/Strands_SDK-1.0+-orange" alt="Strands" />
+    <img src="https://img.shields.io/badge/Amazon_Bedrock-Claude_4-FF9900?logo=amazonaws&logoColor=white" alt="Bedrock" />
+    <img src="https://img.shields.io/badge/Tests-179_passing-brightgreen" alt="Tests" />
+  </p>
+</div>
 
-- **Intelligent Deployment**: 6 specialized AI agents automatically analyze, build, and deploy applications
-- **What-If Mode**: Simulate deployments without making changes - see costs, resources, and timeline predictions
-- **Documentation Analysis**: Automatically extracts requirements from README, DEPLOY.md, and other docs
-- **Multi-Agent Architecture**: Specialized agents for reconnaissance, compilation, infrastructure, deployment, and security
-- **AWS Integration**: Automatic provisioning of VPC, EC2, RDS, ALB (Application Load Balancer), and security groups
-- **Tech Stack Detection**: Supports Node.js, Python, and Go applications with automatic framework detection
-- **Application Load Balancer**: Automatic ALB creation for web services with health checks
-- **Complete Rollback**: Full resource cleanup with dependency-aware teardown
-- **Resource Tracking**: Tag-based AWS resource discovery and orphan detection
-- **Built-in Observability**: Traces, metrics, and tool usage tracking via Strands SDK
-- **Professional CLI**: Easy-to-use command-line interface with rollback, destroy, and reconcile commands
-- **Color-Coded Output**: Visual feedback with color-coded CLI output for better readability
-- **Comprehensive Testing**: 200+ tests including 55 property-based tests with Hypothesis
+---
 
-## 🏗️ Architecture
+HiveMind is a production-ready multi-agent AI system built with the **Strands SDK** and **Amazon Bedrock**. It ships with a full-featured **React web studio** for real-time agent chat, infrastructure deployment, CloudWatch log browsing, and deployment tracking — all in one place.
 
-The system uses **6 specialized agents** coordinated by a Conductor:
+## Screenshots
 
-```mermaid
-graph TD
-    A[🎯 HiveMind Control Plane<br/>Orchestrates all agents]
-    B[🔍 Recon<br/>Analyze documentation]
-    C[🔨 Compiler<br/>Build application]
-    D[☁️ Provisioner<br/>AWS infrastructure]
-    E[🚀 Deployer<br/>Deploy application]
-    F[🔒 Sheriff<br/>Security hardening]
-    
-    A --> B
-    A --> C
-    B --> C
-    C --> D
-    D --> E
-    E --> F
-    
-    style A fill:#4a90e2,stroke:#2e5c8a,stroke-width:2px,color:#fff
-    style B fill:#50c878,stroke:#2d7a4a,stroke-width:2px,color:#fff
-    style C fill:#ff6b6b,stroke:#cc5555,stroke-width:2px,color:#fff
-    style D fill:#ffd93d,stroke:#ccae31,stroke-width:2px,color:#333
-    style E fill:#a78bfa,stroke:#7c5fd8,stroke-width:2px,color:#fff
-    style F fill:#f97316,stroke:#c75a11,stroke-width:2px,color:#fff
+<div align="center">
+  <img src="assets/webapp-ss.png" alt="HiveMind Studio — main view" width="100%" />
+  <p><em>HiveMind Studio — sidebar navigation, chat view, and real-time agent streaming</em></p>
+</div>
+
+<div align="center">
+  <img src="assets/webapp-settings-ss.png" alt="HiveMind Studio — settings panel" width="100%" />
+  <p><em>Settings panel — Bedrock auth configuration, theme presets, and style options</em></p>
+</div>
+
+---
+
+## Features
+
+**Multi-Agent Backend**
+
+- 3 specialized Strands agents: Recon, Conductor, Janitor
+- Real-time streaming chat via WebSocket (`stream_async`)
+- Amazon Bedrock integration with Claude Sonnet 4 (default)
+- Multiple auth modes: env vars, AWS profile, or explicit keys
+- CloudWatch log browsing and live tailing
+- CloudFormation deployment tracking with event streaming
+
+**HiveMind Studio (Web UI)**
+
+- React 18 + Ant Design — dark/light mode, 6 color themes, 4 style presets
+- 200px collapsible sidebar with grouped navigation (Navigate / Actions / Tools)
+- Animated HiveMind logo with pulse glow and hover spin
+- Centered settings modal with Bedrock auth configuration and live connection test
+- Streaming chat with per-message agent switching
+- Offline fallback mode when backend is unreachable
+
+---
+
+## Architecture
+
+```
+HiveMind/
+├── hivemind_web/          # FastAPI backend
+│   ├── server.py          # REST + WebSocket endpoints
+│   ├── agent_router.py    # Agent registry
+│   ├── bedrock_auth.py    # Multi-mode AWS auth (env/profile/keys)
+│   ├── session_manager.py # WebSocket session tracking
+│   └── metrics_tracker.py # Interaction metrics
+├── src/
+│   ├── agents/            # Strands agent definitions
+│   ├── tools/             # Agent tools
+│   └── schemas/           # Data models
+├── HMWebApp/              # React frontend (Vite + TypeScript)
+│   └── src/
+│       ├── components/    # UI components
+│       ├── contexts/      # ThemeContext, AuthContext
+│       ├── hooks/         # useWebSocket
+│       ├── pages/         # StudioPage, LandingPage, DocsLayout
+│       └── services/      # chatService, logService, deploymentService
+├── tests/                 # Python test suite
+├── .env.example           # Environment variable template
+└── requirements.txt       # Python dependencies
 ```
 
-### The Agents
+### Agents
 
-1. **🎯 Control Plane** - Orchestrates the deployment workflow and communicates with users
-2. **🔍 SA (Solutions Architect)** - Analyzes documentation to extract deployment requirements
-3. **🔨 DevOps** - Analyzes repositories and builds applications (Node.js, Python, Go)
-4. **☁️ SysEng (Systems Engineering)** - Provisions AWS infrastructure (VPC, EC2, RDS, ALB)
-5. **🚀 Release-Engineer** - Deploys and configures applications on infrastructure
-6. **🔒 SecOps (Security Operations)** - Hardens security across infrastructure and applications
+| Agent | Role | Capabilities |
+|-------|------|-------------|
+| 🔍 Recon | Repository Scout | Repo analysis, tech detection, dependency scan, security audit |
+| 🎼 Conductor | Infrastructure Orchestrator | Infra design, CloudFormation, cost estimation, architecture |
+| 🧹 Janitor | Cleanup & Maintenance | Resource cleanup, cost optimization, drift detection, compliance |
 
-### Powered by Strands SDK
+---
 
-This project uses the [Strands SDK](https://strandsagents.com) for AI agent orchestration, providing:
-- Automatic tool selection by LLM
-- Built-in agent loop and reasoning
-- Comprehensive observability and metrics
-- OpenTelemetry integration
+## Quick Start
 
-## 🚀 Quick Start
-
-### Installation
-
-**Option 1: Quick Install (Recommended)**
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/hivemind-autodeploy.git
-cd hivemind-autodeploy
-
-# Run installer (installs to ~/.hivemind by default)
-./install.sh
-
-# Or install to custom location
-./install.sh /path/to/install
-
-# Restart terminal or source your shell config
-source ~/.zshrc  # or ~/.bashrc
-
-# Verify installation
-hivemind --help
-hm --help
-man hivemind
-```
-
-**Option 2: Development Setup**
-```bash
-# Clone and setup for development
-git clone https://github.com/yourusername/hivemind-autodeploy.git
-cd hivemind-autodeploy
-
-# Create virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Use with python -m
-python -m src.cli --help
-```
-
-### 1. Configure AWS Credentials
+### 1. Clone and install
 
 ```bash
-# Create virtual environment
+git clone https://github.com/yourusername/hivemind.git
+cd hivemind
+
 python -m venv .venv
-source .venv/bin/activate  # On macOS/Linux
-
-# Install dependencies (includes strands-agents)
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Configure AWS Credentials
+### 2. Configure AWS credentials
+
+Copy `.env.example` to `.env` and fill in your credentials:
 
 ```bash
-# Option 1: AWS CLI
-aws configure
-
-# Option 2: Environment variables
-export AWS_ACCESS_KEY_ID=your_key
-export AWS_SECRET_ACCESS_KEY=your_secret
-export AWS_REGION=us-east-1
+cp .env.example .env
 ```
 
-### 3. Try What-If Mode (Safe!)
+Three auth modes are supported — pick one:
 
 ```bash
-# Simulate deployment without making changes
-hivemind deploy https://github.com/user/my-app "Test deployment" --what-if
+# Option A: env vars
+AWS_ACCESS_KEY_ID=AKIA...
+AWS_SECRET_ACCESS_KEY=...
+AWS_DEFAULT_REGION=us-east-1
 
-# Or use the alias
-hm deploy https://github.com/user/my-app "Test" --what-if
+# Option B: named AWS profile (leave keys blank)
+# Set auth_mode = "profile" in the Studio settings UI
 
-# Output shows:
-# - Estimated monthly costs
-# - Resources to be created
-# - Timeline predictions
-# - No AWS charges!
+# Option C: configure via the Studio UI at runtime (keys never saved to disk)
 ```
 
-### 4. Deploy an Application
+Make sure your IAM user/role has `bedrock:InvokeModel` permission on the Claude model you want to use.
 
-**Using installed commands:**
-```bash
-# Analyze repository first
-hivemind analyze https://github.com/user/my-app
-
-# Simulate deployment
-hivemind deploy https://github.com/user/my-app "Deploy app" --what-if
-
-# Real deployment
-hivemind deploy https://github.com/user/my-app "Production deployment"
-
-# Check status
-hivemind status <deployment-id>
-
-# Use short alias
-hm status <deployment-id>
-```
-
-**Using Python module (development):**
-```bash
-# Analyze repository first
-python -m src.cli analyze https://github.com/user/my-app
-
-# Simulate deployment
-python -m src.cli deploy https://github.com/user/my-app "Deploy app" --what-if
-
-# Real deployment
-python -m src.cli deploy https://github.com/user/my-app "Production deployment"
-
-# Check status
-python -m src.cli status <deployment-id>
-```
-
-**Python API:**
-```python
-from src.agents.strands_conductor import StrandsConductorAgent
-
-# Create conductor agent
-conductor = StrandsConductorAgent()
-
-# What-if mode (safe, no AWS charges)
-result = conductor.deploy(
-    repo_url="https://github.com/user/my-app",
-    description="Deploy my Node.js application with PostgreSQL",
-    dry_run=True  # What-if mode!
-)
-
-# Real deployment
-result = conductor.deploy(
-    repo_url="https://github.com/user/my-app",
-    description="Deploy my Node.js application with PostgreSQL",
-    dry_run=False  # Real deployment
-)
-
-print(f"Deployment ID: {result.deployment_id}")
-print(f"Status: {result.state.status}")
-```
-
-## 📁 Project Structure
-
-```
-hivemind-autodeploy/
-├── src/                          # Source code
-│   ├── agents/                   # AI agents
-│   ├── tools/                    # Agent tools
-│   ├── schemas/                  # Data models
-│   ├── utils/                    # Utilities
-│   └── cli.py                    # CLI interface
-├── tests/                        # Test suite (200+ tests)
-├── bin/                          # CLI wrappers (hivemind, hm)
-├── docs/                         # Man pages
-├── Historical-Dev-Notes/         # Development history
-├── README.md                     # This file
-├── QUICK_START.md                # Getting started guide
-├── TESTING_GUIDE.md              # Testing guide
-├── AWS_CREDENTIALS_SETUP.md      # AWS setup guide
-├── install.sh                    # Installer script
-├── requirements.txt              # Python dependencies
-└── pytest.ini                    # Test configuration
-```
-
-**Working files location:** `~/.hivemind/`
-```
-~/.hivemind/
-├── deployments/                  # Deployment state files
-├── test_deployments/             # Test deployment files
-├── analyzed_repos/               # Cloned repositories
-└── analysis/                     # Analysis workspace
-```
-
-**Note:** All working files are stored in `~/.hivemind/` to keep the repository clean. This directory is created automatically on first use.
-
-## 🧪 Testing
-
-HiveMind has comprehensive test coverage with **200+ tests** including property-based testing:
+### 3. Start the backend
 
 ```bash
-# Run all tests
-pytest -v
+uvicorn hivemind_web.server:app --reload --port 8000
+```
 
-# Run property-based tests (55 tests, < 30 seconds)
-pytest -m property -v --hypothesis-show-statistics
+### 4. Start the frontend
 
-# Run unit tests only
-pytest -m unit -v
+```bash
+cd HMWebApp
+npm install
+npm run dev
+# Opens at http://localhost:3000
+```
 
-# Run with coverage
-pytest --cov=src tests/
+### 5. Configure Bedrock in the UI
 
-# Run specific test file
-pytest tests/test_orchestration_property.py -v
-pytest tests/test_alb_integration.py -v
+Open Settings (⚙️ in the top bar) → **Bedrock Connection** → choose your auth mode → **Test Connection**.
 
-# Run quietly (for CI/CD)
+Once connected, head to **Chat** and start talking to an agent.
+
+---
+
+## Bedrock Authentication
+
+The backend supports three auth modes, configurable per-session from the UI or via environment variables:
+
+| Mode | How it works |
+|------|-------------|
+| `env` | boto3 default chain — env vars, `~/.aws/credentials`, instance role |
+| `profile` | Named profile from `~/.aws/config` |
+| `keys` | Explicit access key + secret passed at runtime (never persisted to disk) |
+
+The frontend `BedrockAuthPanel` (Settings → Bedrock Connection) lets you switch modes, pick a region, choose a model, and validate the connection with a single click.
+
+---
+
+## API Reference
+
+### REST
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/agents` | List available agents |
+| `POST` | `/api/auth/validate` | Validate Bedrock credentials |
+| `GET` | `/api/deployments` | List deployments |
+| `GET` | `/api/logs/groups` | List CloudWatch log groups |
+| `GET` | `/api/logs/events` | Fetch log events |
+
+### WebSocket
+
+**`ws://host/ws/chat`** — real-time agent chat with streaming
+
+Client sends:
+
+```json
+{ "type": "message", "agent_id": "conductor", "message": "...", "auth_config": { ... } }
+{ "type": "set_auth", "auth_config": { "auth_mode": "env", "region": "us-east-1", "model_id": "..." } }
+{ "type": "switch_agent", "agent_id": "recon" }
+```
+
+Server streams:
+
+```json
+{ "type": "stream_start", "message_id": "...", "agent_id": "conductor" }
+{ "type": "stream_chunk", "message_id": "...", "content": "Hello" }
+{ "type": "stream_end",   "message_id": "...", "metrics": { ... } }
+{ "type": "auth_status",  "ok": true, "message": "Connected to Amazon Bedrock" }
+```
+
+---
+
+## Testing
+
+```bash
+# Python backend tests
 pytest -q
+
+# Frontend tests (179 passing)
+cd HMWebApp
+npx vitest run --silent
 ```
 
-### Test Suite Highlights ✨
-- **55 property-based tests** using Hypothesis (no credentials required!)
-- **7 ALB integration tests** for load balancer support
-- **30+ unit test files** covering all components
-- **Fast execution**: All property tests run in < 30 seconds
-- **No external dependencies**: Tests work without AWS credentials or network access
+The frontend test suite covers unit tests and property-based tests (fast-check) across all components, contexts, and services.
 
-## 💡 CLI Commands
+---
 
-After installation, use `hivemind` or `hm` from anywhere:
+## Tech Stack
 
-### Core Commands
-```bash
-# Analyze repository (SA only)
-hivemind analyze https://github.com/user/app
+| Layer | Technology |
+|-------|-----------|
+| AI Agents | [Strands SDK](https://strandsagents.com) + Amazon Bedrock |
+| LLM | Claude Sonnet 4 (default), Nova Pro/Lite, Claude 3.5 |
+| Backend | FastAPI + uvicorn + WebSockets |
+| Frontend | React 18 + TypeScript + Vite |
+| UI | Ant Design 5 |
+| AWS SDK | boto3 / botocore |
+| Testing (Python) | pytest + Hypothesis |
+| Testing (TS) | Vitest + fast-check + Testing Library |
 
-# Simulate deployment (safe, no AWS charges)
-hivemind deploy https://github.com/user/app "Deploy" --what-if
+---
 
-# Real deployment
-hivemind deploy https://github.com/user/app "Production v1.0"
-
-# Show deployment plan
-hivemind plan <deployment-id>
-
-# Check status
-hivemind status <deployment-id>
-
-# Retry failed deployment
-hivemind retry <deployment-id>
-
-# Use short alias
-hm deploy https://github.com/user/app "Test" --what-if
-```
-
-### Cleanup Commands ✨ NEW
-```bash
-# Clean up temporary files
-hivemind cleanup
-
-# Clean up with backup archive
-hivemind cleanup --backup
-
-# Clean up without confirmation
-hivemind cleanup --yes
-```
-
-### Resource Management
-```bash
-# Rollback deployment (delete all resources)
-hivemind rollback <deployment-id>
-
-# Destroy deployment (alias for rollback)
-hivemind destroy <deployment-id> --force
-
-# Reconcile state with AWS (find orphaned resources)
-hivemind reconcile <deployment-id>
-
-# Find all orphaned resources
-hivemind find-orphans
-```
-
-### Help & Documentation
-```bash
-# Get help
-hivemind --help
-hivemind deploy --help
-
-# Read manual
-man hivemind
-
-# List all deployments
-hivemind list
-hivemind list --status completed
-```
-
-## 🎓 Example Usage
-
-**What-If Mode:**
-```bash
-# See example_what_if.py for complete examples
-python example_what_if.py
-```
-
-**Python API:**
-```bash
-# See example_strands_usage.py for complete examples
-python example_strands_usage.py
-```
-
-## 📊 Current Status
-
-### ✅ Production Ready (95% Complete)
-
-**Core Functionality:**
-- ✅ All 6 Strands agents (Conductor, Recon, Compiler, Provisioner, Deployer, Sheriff)
-- ✅ Repository analysis and tech stack detection (Node.js, Python, Go)
-- ✅ Build system (npm, pip, go build)
-- ✅ AWS infrastructure provisioning (VPC, EC2, RDS, ALB)
-- ✅ Application deployment via SSH
-- ✅ Security hardening (SSL, firewall, OS hardening)
-- ✅ What-if mode (dry-run with cost predictions)
-- ✅ State management and logging
-- ✅ Error handling and recovery
-- ✅ Complete rollback and cleanup
-- ✅ Resource tracking with AWS tags
-- ✅ Orphaned resource detection
-
-**Testing:**
-- ✅ 200+ tests passing
-- ✅ 55 property-based tests (Hypothesis)
-- ✅ 7 ALB integration tests
-- ✅ Fast execution (< 30 seconds for property tests)
-- ✅ No credentials required for tests
-
-**Documentation:**
-- ✅ README with setup instructions
-- ✅ QUICK_START guide
-- ✅ TESTING_GUIDE
-- ✅ AWS_CREDENTIALS_SETUP
-- ✅ Inline code documentation
-- ✅ Phase completion summaries
-
-### 🎯 Key Achievements
-
-**Property-Based Testing:**
-- 55 comprehensive property tests covering all system behaviors
-- Tests run without AWS credentials or network access
-- Fast execution enables rapid development
-- Hypothesis generates 100+ test cases per property
-
-**ALB Integration:**
-- Automatic load balancer creation for web services
-- Health check configuration
-- Cost estimation (~$16.43/month)
-- Complete integration with Provisioner and Conductor
-
-**Resource Management:**
-- Tag-based resource discovery (HM-DeploymentId tags)
-- Orphaned resource detection
-- Dependency-aware cleanup
-- Cost tracking per deployment
-
-### ⏳ Optional Enhancements (5%)
-- ⏳ Integration tests with real AWS (requires AWS account)
-- ⏳ Performance optimization (caching, parallelization)
-- ⏳ Additional language support (Java, Rust)
-
-## 🔧 Requirements
+## Requirements
 
 - Python 3.10+
-- AWS account with appropriate permissions
-- Strands SDK (installed via requirements.txt)
-- AWS credentials configured
+- Node.js 18+
+- AWS account with Bedrock access (Claude model enabled in your region)
+- `strands-agents >= 1.0.0`
 
-## 📖 Learn More
+---
 
-- [Strands Documentation](https://strandsagents.com/latest/documentation/)
-- [Strands GitHub](https://github.com/strands-agents)
-- [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/)
+## Learn More
 
-## 🤝 Contributing
+- [Strands SDK Docs](https://strandsagents.com/latest/documentation/)
+- [Amazon Bedrock](https://aws.amazon.com/bedrock/)
+- [Ant Design](https://ant.design/)
 
-This is a learning project for understanding multi-agent systems and the Strands SDK. Feel free to explore and extend!
+---
 
-## 📝 License
+## License
 
-This project is for educational purposes.
+Educational / personal use. See `LICENSE`.
